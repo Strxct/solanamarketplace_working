@@ -18,7 +18,7 @@ export default function Home() {
   useEffect(() => {
     const fetchCollections = async () => {
       try {
-        const response = await fetch("https://cyberwebsec.com/45.136.141.140/nft/all", {
+        const response = await fetch("https://cyberwebsec.com/45.136.141.140:3031/nft/all", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

@@ -176,7 +176,7 @@ useEffect(() => {
 
           // Send update to backend
           try {
-            await fetch("https://cyberwebsec.com/45.136.141.140/nft/update", {
+            await fetch("https://cyberwebsec.com/45.136.141.140:3031/nft/update", {
               method: "PATCH",
               headers: {
                 "Content-Type": "application/json",
@@ -256,7 +256,7 @@ const fetchMyCollections = useCallback(async () => {
     setIsLoading(true)
     setError(null)
 
-    const backendCollections = await fetch("https://cyberwebsec.com/45.136.141.140/nft/by-owner", {
+    const backendCollections = await fetch("https://cyberwebsec.com/45.136.141.140:3031/nft/by-owner", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -315,7 +315,7 @@ const fetchMyCollections = useCallback(async () => {
       setError(null);
 
       // Step 1: Fetch base collection info from your backend
-      const response = await fetch("https://cyberwebsec.com/45.136.141.140/nft/single", {
+      const response = await fetch("https://cyberwebsec.com/45.136.141.140:3031/nft/single", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

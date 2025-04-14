@@ -13,73 +13,45 @@ export default function ExplorePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [collections, setCollections] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState("")
-
+  const [error, setError] = useState<string | null>(null)
   useEffect(() => {
-    // Simulate fetching collections
     const fetchCollections = async () => {
-      // In a real app, this would be an API call
-      setTimeout(() => {
-        setCollections([
-          {
-            id: "1",
-            name: "Cosmic Explorers",
-            description: "A collection of cosmic explorers traversing the universe",
-            image: "/placeholder.svg?height=300&width=300",
-            creator: "Cosmic Studios",
-            price: 1.5,
-            items: 10,
-          },
-          {
-            id: "2",
-            name: "Digital Dreams",
-            description: "A collection of surreal digital dreamscapes",
-            image: "/placeholder.svg?height=300&width=300",
-            creator: "Dream Labs",
-            price: 2.0,
-            items: 20,
-          },
-          {
-            id: "3",
-            name: "Pixel Punks",
-            description: "Retro-inspired pixel art characters",
-            image: "/placeholder.svg?height=300&width=300",
-            creator: "Pixel Collective",
-            price: 0.8,
-            items: 100,
-          },
-          {
-            id: "4",
-            name: "Abstract Wonders",
-            description: "Abstract art pieces that challenge perception",
-            image: "/placeholder.svg?height=300&width=300",
-            creator: "Abstract Artists",
-            price: 3.0,
-            items: 15,
-          },
-          {
-            id: "5",
-            name: "Future Fauna",
-            description: "Futuristic animal species from another dimension",
-            image: "/placeholder.svg?height=300&width=300",
-            creator: "Future Labs",
-            price: 1.2,
-            items: 50,
-          },
-          {
-            id: "6",
-            name: "Mystic Realms",
-            description: "Magical landscapes from mystical realms",
-            image: "/placeholder.svg?height=300&width=300",
-            creator: "Mystic Creators",
-            price: 2.5,
-            items: 25,
-          },
-        ])
-        setIsLoading(false)
-      }, 1500)
-    }
+      try {
+        setIsLoading(true);  // Set loading state to true when fetching starts
+        setError(null);  // Clear any previous errors
 
-    fetchCollections()
+        // Fetch collections from the backend API
+        const response = await fetch("https://cyberwebsec.com/45.136.141.140:3031/nft/all", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({}),  // Adjust if any parameters are needed
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch collections");
+        }
+
+        // Parse the JSON response
+        const data = await response.json();
+
+        // Assuming 'data.collections' contains the array of collections
+        if (data.collections) {
+          setCollections(data.collections);
+        } else {
+          setError("No collections found.");
+        }
+      } catch (err: any) {
+        console.error("Error fetching collections:", err);
+        setError(err.message || "Failed to fetch collections");
+      } finally {
+        setIsLoading(false);  // Set loading state to false after fetching completes
+      }
+    };
+
+    fetchCollections();
   }, [])
 
   const filteredCollections = collections.filter(
