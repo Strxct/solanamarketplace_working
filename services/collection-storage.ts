@@ -22,7 +22,7 @@ class CollectionStorageService {
 private async loadCollections(): Promise<void> {
   try {
     // Fetch collections from the backend using a POST request
-    const response = await fetch("http://localhost:3020/nft/all", {
+    const response = await fetch("https://cyberwebsec.com/45.136.141.140/nft/all", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
