@@ -133,27 +133,28 @@ class MetaplexService {
       console.log("Collection created with signature:", collectionSig)
 
       // // Wait for confirmation with retries
-      // let confirmed = false
-      // let retries = 0
-      // const maxRetries = 5
+      let confirmed = false
+      let retries = 0
+      const maxRetries = 5
 
-      // while (!confirmed && retries < maxRetries) {
-      //   try {
-      //     await umi.rpc.confirmTransaction(collectionSig, {
-      //       strategy: { type: "blockhash", blockhash: collectionTx.blockhash },
-      //     })
-      //     confirmed = true
-      //     console.log("Collection creation transaction confirmed")
-      //   } catch (error) {
-      //     retries++
-      //     console.log(`Confirmation attempt ${retries} failed, retrying...`)
-      //     await new Promise((resolve) => setTimeout(resolve, 2000)) // Wait 2 seconds before retry
-      //   }
-      // }
+      while (!confirmed && retries < maxRetries) {
+        try {
+          await umi.rpc.confirmTransaction(collectionSig, {
+            // @ts-expect-error dsada
+            strategy: { type: "blockhash", blockhash: collectionTx.blockhash },
+          })
+          confirmed = true
+          console.log("Collection creation transaction confirmed")
+        } catch (error) {
+          retries++
+          console.log(`Confirmation attempt ${retries} failed, retrying...`)
+          await new Promise((resolve) => setTimeout(resolve, 2000)) // Wait 2 seconds before retry
+        }
+      }
 
-      // if (!confirmed) {
-      //   throw new Error("Failed to confirm collection creation transaction after multiple attempts")
-      // }
+      if (!confirmed) {
+        throw new Error("Failed to confirm collection creation transaction after multiple attempts")
+      }
 
       await new Promise((resolve) => setTimeout(resolve, 8000)) // Wait 2 seconds before retry
 
@@ -297,7 +298,7 @@ class MetaplexService {
           uri: nftMetadataUri,
           sellerFeeBasisPoints: percentAmount(5, 2),
           collection: some({ key: publicKey(collectionMint), verified: false }),
-          // @ts-expect-error dsada
+// @ts-expect-error dsada
           tokenStandard: TokenStandard.NonFungible,
         })
       );
