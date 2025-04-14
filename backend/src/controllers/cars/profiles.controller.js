@@ -79,22 +79,30 @@ export const getAllCollections = async (req, res) => {
 };
 
 
-// UPDATE a collection by collectionMint
 export const updateCollection = async (req, res) => {
-  const { collectionMint } = req.body;
+  const { collectionMint, mintedNfts, ...rest } = req.body;
 
   if (!collectionMint) {
     return res.status(400).json({ message: "Collection Mint is required for update" });
   }
 
   try {
-    const updatedData = { ...req.body };
-    delete updatedData.collectionMint; // Prevent changing the collectionMint (acts as unique identifier)
+    const updateQuery = {};
+
+    // Push new minted NFT(s) to the existing array if provided
+    if (mintedNfts && Array.isArray(mintedNfts) && mintedNfts.length > 0) {
+      updateQuery.$push = { mintedNfts: { $each: mintedNfts } };
+    }
+
+    // Set other fields (if any)
+    if (Object.keys(rest).length > 0) {
+      updateQuery.$set = rest;
+    }
 
     const updatedCollection = await Collection.findOneAndUpdate(
       { collectionMint },
-      { $set: updatedData },
-      { new: true } // return the updated document
+      updateQuery,
+      { new: true }
     );
 
     if (!updatedCollection) {

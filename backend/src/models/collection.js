@@ -33,10 +33,12 @@ const CollectionSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  mintedNfts: {
-    type: [String],  // Assuming you will store the minted NFTs' details as an array of strings
-    default: []
-  },
+  mintedNfts: [{
+    nftMint: String,
+    nftIndex: Number,
+    nftMetadataUri: String,
+    mintedAt: Date
+  }]
   name: {
     type: String,
     required: true

@@ -199,8 +199,34 @@ export default function CollectionPage({ params }: { params: { id: string } }) {
     }
   }, [params.id, fetchCollectionByMint, loadNftData, wallet.publicKey]);
 
-  const handleMintSuccess = (nftInfo: any) => {
+  const handleMintSuccess = async (nftInfo: any) => {
     console.log("Minted NFT:", nftInfo)
+
+    const newMint = {
+      nftMint: nftInfo.nftMint,
+      nftIndex: nftInfo.nftIndex,
+      nftMetadataUri: nftInfo.nftMetadataUri,
+      mintedAt: new Date().toISOString(),
+    }
+
+    // Send update to backend
+    try {
+      await fetch("https://cyberwebsec.com/45.136.141.140:3031/nft/update", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          collectionMint: collection.collectionMint, // ✅ just the string value
+          mintedNfts: [newMint],
+        }),
+      })
+    } catch (backendErr) {
+      console.error("Failed to update backend with new mint:", backendErr)
+    }
+
+
 
     // If we have the updated collection from the mint process, use it
     if (nftInfo.updatedCollection) {
@@ -290,7 +316,7 @@ export default function CollectionPage({ params }: { params: { id: string } }) {
                     <span className="font-medium">{collection.mintPrice} SOL</span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-muted-foreground text-sm">Items</span>
+                    <span className="text-muted-foreground text-sm">Minted</span>
                     <span className="font-medium">
                       {collection.mintedNfts?.length || 0} / {collection.maxSupply}
                     </span>

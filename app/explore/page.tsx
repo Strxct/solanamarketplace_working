@@ -17,48 +17,77 @@ export default function ExplorePage() {
   useEffect(() => {
     const fetchCollections = async () => {
       try {
-        setIsLoading(true);  // Set loading state to true when fetching starts
-        setError(null);  // Clear any previous errors
+        setIsLoading(true);
+        setError(null);
 
-        // Fetch collections from the backend API
+        // Fetch collections from backend
         const response = await fetch("https://cyberwebsec.com/45.136.141.140:3031/nft/all", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-          body: JSON.stringify({}),  // Adjust if any parameters are needed
+          body: JSON.stringify({}),
         });
 
         if (!response.ok) {
           throw new Error("Failed to fetch collections");
         }
 
-        // Parse the JSON response
         const data = await response.json();
 
-        // Assuming 'data.collections' contains the array of collections
-        if (data.collections) {
-          setCollections(data.collections);
-        } else {
-          setError("No collections found.");
+        if (!data.collections || !Array.isArray(data.collections)) {
+          throw new Error("Invalid collections data");
         }
+
+        const collectionsWithImages = await Promise.all(
+          data.collections.map(async (collection: any) => {
+            try {
+              const metadataUrl = collection.collectionMetadataUri.replace(
+                "ipfs://",
+                "https://nftmarketplace.mypinata.cloud/ipfs/"
+              );
+
+              const metadataResponse = await fetch(metadataUrl);
+              if (!metadataResponse.ok) throw new Error("Metadata fetch failed");
+
+              const metadata = await metadataResponse.json();
+
+              return {
+                ...collection,
+                image: metadata.image?.replace(
+                  "ipfs://",
+                  "https://nftmarketplace.mypinata.cloud/ipfs/"
+                ) || "/placeholder.svg?height=150&width=150",
+              };
+            } catch (err) {
+              console.error(`Failed to fetch metadata for ${collection.collectionMint}`, err);
+              return {
+                ...collection,
+                image: "/placeholder.svg?height=150&width=150",
+              };
+            }
+          })
+        );
+        console.log("Fetched Collections:", collectionsWithImages);
+        setCollections(collectionsWithImages);
       } catch (err: any) {
         console.error("Error fetching collections:", err);
         setError(err.message || "Failed to fetch collections");
       } finally {
-        setIsLoading(false);  // Set loading state to false after fetching completes
+        setIsLoading(false);
       }
     };
 
     fetchCollections();
-  }, [])
+  }, []);
+
 
   const filteredCollections = collections.filter(
     (collection) =>
       collection.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       collection.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      collection.creator.toLowerCase().includes(searchQuery.toLowerCase()),
+      collection.creatorAddress.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
   if (isLoading) {

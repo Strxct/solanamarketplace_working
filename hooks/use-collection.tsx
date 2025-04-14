@@ -167,29 +167,7 @@ useEffect(() => {
           collectionStorageService.updateCollection(collectionMint, updatedCollection)
 
           // 🛠️ Define newMint to send to backend
-          const newMint = {
-            nftMint: nftInfo.nftMint,
-            nftIndex,
-            nftMetadataUri,
-            mintedAt: new Date().toISOString(),
-          }
 
-          // Send update to backend
-          try {
-            await fetch("https://cyberwebsec.com/45.136.141.140:3031/nft/update", {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-              },
-              body: JSON.stringify({
-                collectionMint: collectionMint,
-                mintedNfts: [...mintedNfts, newMint],
-              }),
-            })
-          } catch (backendErr) {
-            console.error("Failed to update backend with new mint:", backendErr)
-          }
 
           // Update the current collection if it's the same one
           if (currentCollection && currentCollection.collectionMint === collectionMint) {
