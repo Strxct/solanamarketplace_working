@@ -253,7 +253,7 @@ export default function CreatePage() {
       const result = await createCollection(collectionData)
       console.log(result)
       // Set success state
-      fetch("http://localhost:3020/nft/create", {
+      fetch("https://cyberwebsec.com/45.136.141.140/nft/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -106,7 +106,7 @@ export default function CollectionPage({ params }: { params: { id: string } }) {
     const loadCollection = async () => {
       try {
         // Fetch collection from backend
-        const response = await fetch("http://localhost:3020/nft/single", {
+        const response = await fetch("https://cyberwebsec.com/45.136.141.140/nft/single", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
