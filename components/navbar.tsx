@@ -36,7 +36,7 @@ export default function Navbar() {
               transition={{ duration: 0.5 }}
               className="relative flex items-center"
             >
-              <div className="h-8 w-8 rounded-full bg-primary animate-pulse-glow"></div>
+              <div className="h-8 w-8 rounded-full "> <img src="/logo.webp" /></div>
               <span className="ml-2 text-xl font-bold tracking-tight">WorldNFT</span>
             </motion.div>
           </Link>
