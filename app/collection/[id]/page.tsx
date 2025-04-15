@@ -259,6 +259,10 @@ export default function CollectionPage({ params }: { params: { id: string } }) {
     return <LoadingIndicator message="Loading collection..." />
   }
 
+  const isNftMinted = (nftIndex: number) => {
+    return collection.mintedNfts?.some((mint: any) => mint.nftIndex === nftIndex)
+  }
+
   if (!collection) {
     return (
       <div className="container py-12 text-center">
@@ -386,26 +390,31 @@ export default function CollectionPage({ params }: { params: { id: string } }) {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.3, delay: index * 0.05 }}
                           >
-                            <Card className="overflow-hidden hover:border-primary/50 transition-all duration-300">
-                              <div className="aspect-square overflow-hidden">
-                                <img
-                                  src={item.image || "/placeholder.svg"}
-                                  alt={item.name}
-                                  className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                                />
+                          <Card className="relative overflow-hidden hover:border-primary/50 transition-all duration-300">
+                            {isNftMinted(index) && (
+                              <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded z-10 shadow">
+                                Minted
                               </div>
-                              <CardContent className="p-4">
-                                <h3 className="font-medium">{item.name}</h3>
-                                <div className="mt-2 grid grid-cols-2 gap-2">
-                                  {item.attributes.slice(0, 4).map((attr: any, i: number) => (
-                                    <div key={i} className="bg-muted rounded-md px-2 py-1 text-xs">
-                                      <span className="text-muted-foreground">{attr.trait_type}: </span>
-                                      <span>{attr.value}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </CardContent>
-                            </Card>
+                            )}
+                            <div className="aspect-square overflow-hidden">
+                              <img
+                                src={item.image || "/placeholder.svg"}
+                                alt={item.name}
+                                className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                              />
+                            </div>
+                            <CardContent className="p-4">
+                              <h3 className="font-medium">{item.name}</h3>
+                              <div className="mt-2 grid grid-cols-2 gap-2">
+                                {item.attributes.slice(0, 4).map((attr: any, i: number) => (
+                                  <div key={i} className="bg-muted rounded-md px-2 py-1 text-xs">
+                                    <span className="text-muted-foreground">{attr.trait_type}: </span>
+                                    <span>{attr.value}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </CardContent>
+                          </Card>
                           </motion.div>
                         ))
                       )}
