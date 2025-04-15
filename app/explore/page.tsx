@@ -133,7 +133,7 @@ export default function ExplorePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Link href={`/collection/${collection.id}`}>
+                <Link href={`/collection/${collection.collectionMint}`}>
                   <Card className="overflow-hidden hover:border-primary/50 transition-all duration-300 h-full flex flex-col">
                     <div className="aspect-square overflow-hidden">
                       <img
