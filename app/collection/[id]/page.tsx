@@ -1,119 +1,133 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import { motion } from "framer-motion"
-import Link from "next/link"
-import { ArrowLeft, ExternalLink, Share2, Shield } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import LoadingIndicator from "@/components/loading-indicator"
-import { useSolanaWallet } from "@/contexts/solana-wallet-context"
-import useCollection from "@/hooks/use-collection"
-import MintForm from "@/components/mint-form"
-import pinataService from "@/services/pinata"
-import collectionStorageService from "@/services/collection-storage"
-import { toast } from "react-hot-toast"
+import React from "react";
+import { useState, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { ArrowLeft, ExternalLink, Share2, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import LoadingIndicator from "@/components/loading-indicator";
+import { useSolanaWallet } from "@/contexts/solana-wallet-context";
+import useCollection from "@/hooks/use-collection";
+import MintForm from "@/components/mint-form";
+import pinataService from "@/services/pinata";
+import collectionStorageService from "@/services/collection-storage";
+import { toast } from "react-hot-toast";
 
-export default function CollectionPage({ params }: { params: { id: string } }) {
-  const { wallet } = useSolanaWallet()
-  const { fetchCollectionByMint, currentCollection, isLoading } = useCollection()
-  const [activeTab, setActiveTab] = useState("items")
-  const [collection, setCollection] = useState<any>(null)
-  const [nfts, setNfts] = useState<any[]>([])
-  const [activity, setActivity] = useState<any[]>([])
-  const [isLoadingNfts, setIsLoadingNfts] = useState(false)
-  const [collectionMetadata, setCollectionMetadata] = useState<any>(null)
-
+export default function CollectionPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { wallet } = useSolanaWallet();
+  const { fetchCollectionByMint, currentCollection, isLoading } =
+    useCollection();
+  const [activeTab, setActiveTab] = useState("items");
+  const [collection, setCollection] = useState<any>(null);
+  const [nfts, setNfts] = useState<any[]>([]);
+  const [activity, setActivity] = useState<any[]>([]);
+  const [isLoadingNfts, setIsLoadingNfts] = useState(false);
+  const [collectionMetadata, setCollectionMetadata] = useState<any>(null);
+  const { id } = React.use(params);
   const loadNftData = useCallback(async (metadataUris: string[]) => {
     try {
-      setIsLoadingNfts(true)
+      setIsLoadingNfts(true);
 
       // Process in smaller batches to prevent UI freezing
-      const batchSize = 5
-      const results = []
+      const batchSize = 5;
+      const results = [];
 
       for (let i = 0; i < metadataUris.length; i += batchSize) {
-        const batch = metadataUris.slice(i, i + batchSize)
+        const batch = metadataUris.slice(i, i + batchSize);
 
         // Process batch
         const batchResults = await Promise.all(
           batch.map(async (uri: string, batchIndex: number) => {
-            const index = i + batchIndex
+            const index = i + batchIndex;
             try {
               // Convert IPFS URI to HTTP for fetching
-              const httpUri = pinataService.ipfsToHttp(uri)
+              const httpUri = pinataService.ipfsToHttp(uri);
 
               // Fetch metadata
-              const response = await fetch(httpUri)
-              const metadata = await response.json()
+              const response = await fetch(httpUri);
+              const metadata = await response.json();
 
               return {
                 id: `item-${index + 1}`,
                 name: metadata.name || `NFT #${index + 1}`,
-                image: pinataService.ipfsToHttp(metadata.image) || `/placeholder.svg?height=300&width=300`,
+                image:
+                  pinataService.ipfsToHttp(metadata.image) ||
+                  `/placeholder.svg?height=300&width=300`,
                 attributes: metadata.attributes || [],
-              }
+              };
             } catch (err) {
-              console.error(`Error fetching NFT metadata for ${uri}:`, err)
+              console.error(`Error fetching NFT metadata for ${uri}:`, err);
               return {
                 id: `item-${index + 1}`,
                 name: `NFT #${index + 1}`,
                 image: `/placeholder.svg?height=300&width=300`,
                 attributes: [],
-              }
+              };
             }
-          }),
-        )
+          })
+        );
 
-        results.push(...batchResults)
+        results.push(...batchResults);
 
         // Update state incrementally to show progress
-        setNfts((prev) => [...prev, ...batchResults])
+        setNfts((prev) => [...prev, ...batchResults]);
 
         // Small delay to allow UI to update
-        await new Promise((resolve) => setTimeout(resolve, 10))
+        await new Promise((resolve) => setTimeout(resolve, 10));
       }
 
       // Final update with all results
-      setNfts(results)
+      setNfts(results);
     } catch (error) {
-      console.error("Error loading NFT data:", error)
+      console.error("Error loading NFT data:", error);
     } finally {
-      setIsLoadingNfts(false)
+      setIsLoadingNfts(false);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
     const fetchCollectionMetadata = async () => {
-      if (!collection?.collectionMetadataUri) return
+      if (!collection?.collectionMetadataUri) return;
 
       try {
-        const httpUri = pinataService.ipfsToHttp(collection.collectionMetadataUri)
-        const response = await fetch(httpUri)
-        const metadata = await response.json()
-        setCollectionMetadata(metadata)
+        const httpUri = pinataService.ipfsToHttp(
+          collection.collectionMetadataUri
+        );
+        const response = await fetch(httpUri);
+        const metadata = await response.json();
+        setCollectionMetadata(metadata);
       } catch (err) {
-        console.error("Error fetching collection metadata:", err)
+        console.error("Error fetching collection metadata:", err);
       }
-    }
+    };
 
-    fetchCollectionMetadata()
-  }, [collection?.collectionMetadataUri])
+    fetchCollectionMetadata();
+  }, [collection?.collectionMetadataUri]);
 
   useEffect(() => {
+    console.log("Collection ID:", id);
     const loadCollection = async () => {
       try {
         // Fetch collection from backend
-        const response = await fetch("https://cyberwebsec.com/45.136.141.140:3031/nft/single", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json"
-          },
-          body: JSON.stringify({ collectionMint: params.id })// Assuming backend needs the mint ID
-        });
+        const response = await fetch(
+          "https://cyberwebsec.com/45.136.141.140:3031/nft/single",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({ collectionMint: id }), // Assuming backend needs the mint ID
+          }
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to fetch collection: ${response.statusText}`);
@@ -135,17 +149,20 @@ export default function CollectionPage({ params }: { params: { id: string } }) {
         }
 
         // Optionally fetch fresh data from chain
-        fetchCollectionByMint(params.id)
+        fetchCollectionByMint(id)
           .then((freshData) => {
             if (freshData) {
-              setCollection(freshData);
+              // setCollection(freshData);
 
               const shouldReloadNfts =
                 !collectionData.nftMetadataUris ||
-                JSON.stringify(collectionData.nftMetadataUris) !== JSON.stringify(freshData.nftMetadataUris);
-
+                JSON.stringify(collectionData.nftMetadataUris) !==
+                  JSON.stringify(freshData.nftMetadataUris);
+              console.log(
+                "Should reload NFTs:", freshData )
               if (shouldReloadNfts && freshData.nftMetadataUris?.length > 0) {
                 setNfts([]);
+                console.log("Reloading NFT data for fresh collection");
                 loadNftData(freshData.nftMetadataUris);
               }
 
@@ -165,15 +182,17 @@ export default function CollectionPage({ params }: { params: { id: string } }) {
     const generateActivityData = (collectionData: any) => {
       if (!collectionData || !collectionData.name) return;
 
-      const mintedActivities = (collectionData.mintedNfts || []).map((mint: any, i: number) => ({
-        id: `activity-mint-${i}`,
-        type: "Mint",
-        item: `${collectionData.name} #${mint.nftIndex + 1}`,
-        from: "Creator",
-        to: wallet.publicKey?.toString() || "Collector",
-        price: collectionData.mintPrice,
-        time: mint.mintedAt || new Date().toISOString(),
-      }));
+      const mintedActivities = (collectionData.mintedNfts || []).map(
+        (mint: any, i: number) => ({
+          id: `activity-mint-${i}`,
+          type: "Mint",
+          item: `${collectionData.name} #${mint.nftIndex + 1}`,
+          from: "Creator",
+          to: wallet.publicKey?.toString() || "Collector",
+          price: collectionData.mintPrice,
+          time: mint.mintedAt || new Date().toISOString(),
+        })
+      );
 
       const mockActivities = Array(Math.max(0, 5 - mintedActivities.length))
         .fill(null)
@@ -194,20 +213,20 @@ export default function CollectionPage({ params }: { params: { id: string } }) {
       setActivity(allActivities);
     };
 
-    if (params.id) {
+    if (id) {
       loadCollection();
     }
-  }, [params.id, fetchCollectionByMint, loadNftData, wallet.publicKey]);
+  }, [id, fetchCollectionByMint, loadNftData, wallet.publicKey]);
 
   const handleMintSuccess = async (nftInfo: any) => {
-    console.log("Minted NFT:", nftInfo)
+    console.log("Minted NFT:", nftInfo);
 
     const newMint = {
       nftMint: nftInfo.nftMint,
       nftIndex: nftInfo.nftIndex,
       nftMetadataUri: nftInfo.nftMetadataUri,
       mintedAt: new Date().toISOString(),
-    }
+    };
 
     // Send update to backend
     try {
@@ -221,20 +240,21 @@ export default function CollectionPage({ params }: { params: { id: string } }) {
           collectionMint: collection.collectionMint, // ✅ just the string value
           mintedNfts: [newMint],
         }),
-      })
+      });
     } catch (backendErr) {
-      console.error("Failed to update backend with new mint:", backendErr)
+      console.error("Failed to update backend with new mint:", backendErr);
     }
-
-
 
     // If we have the updated collection from the mint process, use it
     if (nftInfo.updatedCollection) {
-      setCollection(nftInfo.updatedCollection)
+      setCollection(nftInfo.updatedCollection);
 
       // If the collection has NFT metadata URIs, reload NFT data
-      if (nftInfo.updatedCollection.nftMetadataUris && nftInfo.updatedCollection.nftMetadataUris.length > 0) {
-        loadNftData(nftInfo.updatedCollection.nftMetadataUris)
+      if (
+        nftInfo.updatedCollection.nftMetadataUris &&
+        nftInfo.updatedCollection.nftMetadataUris.length > 0
+      ) {
+        loadNftData(nftInfo.updatedCollection.nftMetadataUris);
       }
 
       // Add the newly minted NFT to the activity
@@ -246,22 +266,24 @@ export default function CollectionPage({ params }: { params: { id: string } }) {
         to: wallet.publicKey?.toString() || "Collector",
         price: collection.mintPrice,
         time: new Date().toISOString(),
-      }
+      };
 
-      setActivity([newActivity, ...activity])
+      setActivity([newActivity, ...activity]);
     } else {
       // Otherwise, refresh the collection data from chain
-      fetchCollectionByMint(params.id)
+      fetchCollectionByMint(id);
     }
-  }
+  };
 
   if (isLoading && !collection) {
-    return <LoadingIndicator message="Loading collection..." />
+    return <LoadingIndicator message="Loading collection..." />;
   }
 
   const isNftMinted = (nftIndex: number) => {
-    return collection.mintedNfts?.some((mint: any) => mint.nftIndex === nftIndex)
-  }
+    return collection.mintedNfts?.some(
+      (mint: any) => mint.nftIndex === nftIndex
+    );
+  };
 
   if (!collection) {
     return (
@@ -277,13 +299,20 @@ export default function CollectionPage({ params }: { params: { id: string } }) {
           </Link>
         </Button>
       </div>
-    )
+    );
   }
 
   return (
     <div className="container py-12">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <Link href="/explore" className="inline-flex items-center text-muted-foreground hover:text-foreground mb-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Link
+          href="/explore"
+          className="inline-flex items-center text-muted-foreground hover:text-foreground mb-6"
+        >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Explore
         </Link>
@@ -297,11 +326,15 @@ export default function CollectionPage({ params }: { params: { id: string } }) {
               className="sticky top-24"
             >
               <div className="rounded-xl overflow-hidden border border-border mb-6">
-              <img
-              src={collectionMetadata?.image ? pinataService.ipfsToHttp(collectionMetadata.image) : "/placeholder.svg"}
-              alt={collection.name}
-              className="w-full aspect-square object-cover"
-            />
+                <img
+                  src={
+                    collectionMetadata?.image
+                      ? pinataService.ipfsToHttp(collectionMetadata.image)
+                      : "/placeholder.svg"
+                  }
+                  alt={collection.name}
+                  className="w-full aspect-square object-cover"
+                />
               </div>
 
               <div className="flex flex-col gap-4">
@@ -317,21 +350,34 @@ export default function CollectionPage({ params }: { params: { id: string } }) {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col">
                     <span className="text-muted-foreground text-sm">Price</span>
-                    <span className="font-medium">{collection.mintPrice} SOL</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-muted-foreground text-sm">Minted</span>
                     <span className="font-medium">
-                      {collection.mintedNfts?.length || 0} / {collection.maxSupply}
+                      {collection.mintPrice} SOL
                     </span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-muted-foreground text-sm">Royalty</span>
-                    <span className="font-medium">{collection.royaltyPercentage}%</span>
+                    <span className="text-muted-foreground text-sm">
+                      Minted
+                    </span>
+                    <span className="font-medium">
+                      {collection.mintedNfts?.length || 0} /{" "}
+                      {collection.maxSupply}
+                    </span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-muted-foreground text-sm">Creator</span>
-                    <span className="font-medium truncate">{collection.creatorAddress}</span>
+                    <span className="text-muted-foreground text-sm">
+                      Royalty
+                    </span>
+                    <span className="font-medium">
+                      {collection.royaltyPercentage}%
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-muted-foreground text-sm">
+                      Creator
+                    </span>
+                    <span className="font-medium truncate">
+                      {collection.creatorAddress}
+                    </span>
                   </div>
                 </div>
 
@@ -340,7 +386,10 @@ export default function CollectionPage({ params }: { params: { id: string } }) {
                   <span>Verified Collection</span>
                 </div>
 
-                <MintForm collection={collection} onMintSuccess={handleMintSuccess} />
+                <MintForm
+                  collection={collection}
+                  onMintSuccess={handleMintSuccess}
+                />
               </div>
             </motion.div>
           </div>
@@ -350,23 +399,34 @@ export default function CollectionPage({ params }: { params: { id: string } }) {
               <div>
                 <h1 className="text-3xl font-bold">{collection.name}</h1>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="text-muted-foreground">By {collection.creatorAddress}</span>
+                  <span className="text-muted-foreground">
+                    By {collection.creatorAddress}
+                  </span>
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-6 w-6"
                     title="View on Explorer"
                     onClick={() =>
-                      window.open(`https://explorer.solana.com/address/${collection.collectionMint}`, "_blank")
+                      window.open(
+                        `https://explorer.solana.com/address/${collection.collectionMint}`,
+                        "_blank"
+                      )
                     }
                   >
                     <ExternalLink className="h-4 w-4" />
                   </Button>
                 </div>
-                <p className="mt-4 text-muted-foreground">{collection.description}</p>
+                <p className="mt-4 text-muted-foreground">
+                  {collection.description}
+                </p>
               </div>
 
-              <Tabs defaultValue="items" className="w-full" onValueChange={setActiveTab}>
+              <Tabs
+                defaultValue="items"
+                className="w-full"
+                onValueChange={setActiveTab}
+              >
                 <TabsList className="grid w-full grid-cols-1">
                   <TabsTrigger value="items">Items</TabsTrigger>
                   {/* <TabsTrigger value="activity">Activity</TabsTrigger> */}
@@ -380,7 +440,9 @@ export default function CollectionPage({ params }: { params: { id: string } }) {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {nfts.length === 0 ? (
                         <div className="col-span-full text-center py-12">
-                          <p className="text-muted-foreground">No items to display yet.</p>
+                          <p className="text-muted-foreground">
+                            No items to display yet.
+                          </p>
                         </div>
                       ) : (
                         nfts.map((item: any, index: number) => (
@@ -390,31 +452,38 @@ export default function CollectionPage({ params }: { params: { id: string } }) {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.3, delay: index * 0.05 }}
                           >
-                          <Card className="relative overflow-hidden hover:border-primary/50 transition-all duration-300">
-                            {isNftMinted(index) && (
-                              <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded z-10 shadow">
-                                Minted
+                            <Card className="relative overflow-hidden hover:border-primary/50 transition-all duration-300">
+                              {isNftMinted(index) && (
+                                <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded z-10 shadow">
+                                  Minted
+                                </div>
+                              )}
+                              <div className="aspect-square overflow-hidden">
+                                <img
+                                  src={item.image || "/placeholder.svg"}
+                                  alt={item.name}
+                                  className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                                />
                               </div>
-                            )}
-                            <div className="aspect-square overflow-hidden">
-                              <img
-                                src={item.image || "/placeholder.svg"}
-                                alt={item.name}
-                                className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                              />
-                            </div>
-                            <CardContent className="p-4">
-                              <h3 className="font-medium">{item.name}</h3>
-                              <div className="mt-2 grid grid-cols-2 gap-2">
-                                {item.attributes.slice(0, 4).map((attr: any, i: number) => (
-                                  <div key={i} className="bg-muted rounded-md px-2 py-1 text-xs">
-                                    <span className="text-muted-foreground">{attr.trait_type}: </span>
-                                    <span>{attr.value}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </CardContent>
-                          </Card>
+                              <CardContent className="p-4">
+                                <h3 className="font-medium">{item.name}</h3>
+                                <div className="mt-2 grid grid-cols-2 gap-2">
+                                  {item.attributes
+                                    .slice(0, 4)
+                                    .map((attr: any, i: number) => (
+                                      <div
+                                        key={i}
+                                        className="bg-muted rounded-md px-2 py-1 text-xs"
+                                      >
+                                        <span className="text-muted-foreground">
+                                          {attr.trait_type}:{" "}
+                                        </span>
+                                        <span>{attr.value}</span>
+                                      </div>
+                                    ))}
+                                </div>
+                              </CardContent>
+                            </Card>
                           </motion.div>
                         ))
                       )}
@@ -433,14 +502,23 @@ export default function CollectionPage({ params }: { params: { id: string } }) {
                     <div className="divide-y">
                       {activity.length === 0 ? (
                         <div className="p-4 text-center">
-                          <p className="text-muted-foreground">No activity to display yet.</p>
+                          <p className="text-muted-foreground">
+                            No activity to display yet.
+                          </p>
                         </div>
                       ) : (
                         activity.map((activity: any) => (
-                          <div key={activity.id} className="grid grid-cols-5 gap-4 p-4 text-sm">
+                          <div
+                            key={activity.id}
+                            className="grid grid-cols-5 gap-4 p-4 text-sm"
+                          >
                             <div>
                               <Badge
-                                variant={activity.type === "Mint" ? "default" : "secondary"}
+                                variant={
+                                  activity.type === "Mint"
+                                    ? "default"
+                                    : "secondary"
+                                }
                                 className="px-2 py-0.5"
                               >
                                 {activity.type}
@@ -462,5 +540,5 @@ export default function CollectionPage({ params }: { params: { id: string } }) {
         </div>
       </motion.div>
     </div>
-  )
+  );
 }
