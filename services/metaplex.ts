@@ -11,7 +11,7 @@ import { sol } from "@metaplex-foundation/umi"
 // Constants
 export const PLATFORM_FEE_PERCENT = 8
 // Platform fee wallet address
-export const PLATFORM_FEE_ADDRESS = "J5zeD8EDjbJDARaMPQWR2QjvSZ1SoSQuj6BYf973EUZS"
+export const PLATFORM_FEE_ADDRESS = "Ep1Ef4LQsAAHx6jwvGWSzVaHKAV63AGkWcvXhMDcbAMe"
 
 // Batch size for processing NFTs
 const BATCH_SIZE = 10
