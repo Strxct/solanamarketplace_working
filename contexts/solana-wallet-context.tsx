@@ -24,10 +24,11 @@ const SolanaWalletContext = createContext<any>(null)
 // Wallet configuration
 const getWalletConfig = () => {
   // Use mainnet for production
-  const network = WalletAdapterNetwork.Mainnet
+  const network = WalletAdapterNetwork.Testnet
 
   // Use custom RPC URL if provided, otherwise use default
-  const endpoint = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || clusterApiUrl(network)
+  // const endpoint = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || clusterApiUrl(network)
+  const endpoint = clusterApiUrl(network)
 
   return {
     network,
@@ -90,6 +91,7 @@ const SolanaWalletInnerProvider = ({
         try {
           setIsLoading(true)
           const walletBalance = await connection.getBalance(wallet.publicKey)
+          console.log("Wallet balance:", walletBalance, network)
           setBalance(walletBalance / 1e9) // Convert lamports to SOL
         } catch (error) {
           console.error("Error fetching balance:", error)

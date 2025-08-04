@@ -4,7 +4,8 @@ import {
   getAllCollections,
   getSingleCollection,
   getCollectionsByOwner,
-  updateCollection
+  updateCollection,
+  handleAuction
 } from "../controllers/cars/profiles.controller.js";
 const collectionRouter = Router();
 
@@ -22,5 +23,6 @@ collectionRouter.route("/all").post(getAllCollections);
 collectionRouter.route("/single").post(getSingleCollection);
 collectionRouter.route("/update").patch(updateCollection);
 collectionRouter.route("/by-owner").post(getCollectionsByOwner);
+collectionRouter.route("/auction").post(handleAuction);
 
 export default collectionRouter;

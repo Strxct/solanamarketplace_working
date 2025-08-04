@@ -23,6 +23,7 @@ export default function Navbar() {
     { name: "Create", path: "/create" },
     { name: "My Collections", path: "/my-collections" },
     { name: "Profile", path: "/profile" },
+    { name: "listing", path: "/listing" },
   ]
 
   return (

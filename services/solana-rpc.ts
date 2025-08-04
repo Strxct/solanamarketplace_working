@@ -16,13 +16,21 @@ class SolanaRpcService {
   /**
    * Initialize connection
    */
+  // private getConnection(): Connection {
+  //   if (!this.connection) {
+  //     const endpoint = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || "https://holy-small-pond.solana-mainnet.quiknode.pro/efac6c65c498a1f6e31d84ef30f9b4c8894b601d/"
+  //     this.connection = new Connection(endpoint, "confirmed")
+  //   }
+  //   return this.connection
+  // }
+
   private getConnection(): Connection {
-    if (!this.connection) {
-      const endpoint = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || "https://holy-small-pond.solana-mainnet.quiknode.pro/efac6c65c498a1f6e31d84ef30f9b4c8894b601d/"
-      this.connection = new Connection(endpoint, "confirmed")
-    }
-    return this.connection
+  if (!this.connection) {
+    const endpoint = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || "https://api.devnet.solana.com"
+    this.connection = new Connection(endpoint, "confirmed")
   }
+  return this.connection
+}
 
   /**
    * Get NFTs owned by a wallet address directly from Solana

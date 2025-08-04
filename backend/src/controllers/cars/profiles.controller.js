@@ -1,5 +1,5 @@
 import { Collection } from "../../models/collection.js";
-
+import { Auction } from "../../models/Auction.js";
 // CREATE a new collection
 export const createCollection = async (req, res) => {
   console.log("Received create request:", req.body);
@@ -163,3 +163,68 @@ export const getSingleCollection = async (req, res) => {
   }
 };
 
+
+
+
+export const handleAuction = async (req, res) => {
+  const { method, mint, owner, price, metadataUri, id, createdAt } = req.body
+
+  if (!method) {
+    return res.status(400).json({ message: "Method is required: 'fetch', 'add', or 'remove'" })
+  }
+
+  try {
+    switch (method) {
+      case "fetch": {
+        const auctions = await Auction.find().sort({ createdAt: -1 })
+        return res.status(200).json({ auctions })
+      }
+
+      case "add": {
+        if (!mint || !owner || !price || !metadataUri) {
+          return res.status(400).json({
+            message: "Missing required fields: mint, owner, price, metadataUri",
+          })
+        }
+
+        const exists = await Auction.findOne({ mint })
+        if (exists) {
+          return res.status(409).json({ message: "Auction already exists for this mint" })
+        }
+
+        const auction = new Auction({
+          mint,
+          owner,
+          price,
+          metadataUri,
+          createdAt: createdAt || new Date().toISOString(),
+        })
+
+        await auction.save()
+        return res.status(201).json({ message: "Auction created", auction })
+      }
+
+      case "remove": {
+        if (!mint && !id) {
+          return res.status(400).json({ message: "Provide 'mint' or 'id' to remove auction" })
+        }
+
+        const removed = mint
+          ? await Auction.findOneAndDelete({ mint })
+          : await Auction.findByIdAndDelete(id)
+
+        if (!removed) {
+          return res.status(404).json({ message: "Auction not found" })
+        }
+
+        return res.status(200).json({ message: "Auction removed", removed })
+      }
+
+      default:
+        return res.status(400).json({ message: `Unsupported method: ${method}` })
+    }
+  } catch (error) {
+    console.error("Auction handler error:", error)
+    return res.status(500).json({ message: "Internal server error" })
+  }
+}
